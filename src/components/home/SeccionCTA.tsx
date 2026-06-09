@@ -12,7 +12,7 @@ export default function SeccionCTA() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            href="https://wa.me/542610000000"
+            href="https://wa.me/5492617670001"
             target="_blank"
             className="bg-white text-marca-700 font-semibold px-8 py-3 rounded-xl hover:bg-marca-50 transition-colors"
           >
