@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-neutro-50 text-neutro-900;
+  }
+}
+
+@layer components {
+  .btn-primario {
+    @apply bg-marca-700 hover:bg-marca-800 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors;
+  }
+  .btn-secundario {
+    @apply border border-marca-700 text-marca-700 hover:bg-marca-50 font-semibold px-5 py-2.5 rounded-lg transition-colors;
+  }
+  .tarjeta {
+    @apply bg-white rounded-xl shadow-sm border border-neutro-200 overflow-hidden;
+  }
+  .input {
+    @apply w-full border border-neutro-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-marca-700 focus:border-transparent;
+  }
+  .label {
+    @apply block text-sm font-medium text-neutro-700 mb-1;
+  }
+}

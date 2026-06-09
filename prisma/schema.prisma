@@ -1,0 +1,239 @@
+// Inmobiliaria Mendoza — Modelo de Base de Datos
+// Motor: PostgreSQL con extensión PostGIS para consultas geoespaciales
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+enum TipoOperacion {
+  VENTA
+  ALQUILER
+  ALQUILER_TEMPORARIO
+}
+
+enum TipoPropiedad {
+  CASA
+  DEPARTAMENTO
+  TERRENO
+  LOCAL_COMERCIAL
+  OFICINA
+  GALPON
+  CAMPO
+  COCHERA
+}
+
+enum EstadoPropiedad {
+  DISPONIBLE
+  RESERVADA
+  VENDIDA
+  ALQUILADA
+  PAUSADA        // publicación temporalmente inactiva
+}
+
+enum EstadoConstruccion {
+  EN_POZO
+  EN_CONSTRUCCION
+  A_ESTRENAR
+  USADO
+}
+
+enum TipoMoneda {
+  ARS
+  USD
+}
+
+enum RolUsuario {
+  ADMIN
+  AGENTE
+  VISITANTE
+}
+
+// ─────────────────────────────────────────
+// USUARIOS (agentes y admin de la inmobiliaria)
+// ─────────────────────────────────────────
+
+model Usuario {
+  id           String       @id @default(cuid())
+  nombre       String
+  apellido     String
+  email        String       @unique
+  passwordHash String
+  telefono     String?
+  fotoPerfil   String?      // URL Cloudinary
+  rol          RolUsuario   @default(AGENTE)
+  activo       Boolean      @default(true)
+
+  propiedades  Propiedad[]  // propiedades que gestiona
+  consultas    Consulta[]   // consultas recibidas
+
+  creadoEn     DateTime     @default(now())
+  actualizadoEn DateTime    @updatedAt
+}
+
+// ─────────────────────────────────────────
+// UBICACIÓN GEOGRÁFICA (zonas de Mendoza)
+// ─────────────────────────────────────────
+
+model Departamento {
+  id       Int       @id @default(autoincrement())
+  nombre   String    @unique  // Godoy Cruz, Guaymallén, Luján de Cuyo, etc.
+  barrios  Barrio[]
+}
+
+model Barrio {
+  id             Int          @id @default(autoincrement())
+  nombre         String
+  departamento   Departamento @relation(fields: [departamentoId], references: [id])
+  departamentoId Int
+  propiedades    Propiedad[]
+
+  @@unique([nombre, departamentoId])
+}
+
+// ─────────────────────────────────────────
+// PROPIEDAD (entidad central)
+// ─────────────────────────────────────────
+
+model Propiedad {
+  id                 String             @id @default(cuid())
+  codigo             String             @unique  // ej: MZA-00123 (para búsqueda rápida)
+
+  // Clasificación
+  tipoOperacion      TipoOperacion
+  tipoPropiedad      TipoPropiedad
+  estado             EstadoPropiedad    @default(DISPONIBLE)
+  estadoConstruccion EstadoConstruccion @default(USADO)
+
+  // Descripción
+  titulo             String             // "Casa 3 dorm con pileta en Chacras"
+  descripcion        String             // texto largo
+  destacada          Boolean            @default(false)
+
+  // Precio
+  precio             Decimal            @db.Decimal(14, 2)
+  moneda             TipoMoneda         @default(USD)
+  precioNegociable   Boolean            @default(false)
+  expensas           Decimal?           @db.Decimal(10, 2)  // solo alquiler
+
+  // Superficies (en m²)
+  superficieTotal    Decimal?           @db.Decimal(8, 2)
+  superficieCubierta Decimal?           @db.Decimal(8, 2)
+
+  // Características numéricas
+  dormitorios        Int?
+  banos              Int?
+  cocheras           Int?               @default(0)
+  antiguedad         Int?               // años
+
+  // Ubicación
+  direccion          String             // calle y número (sin lat/lng exactos para privacidad)
+  barrio             Barrio?            @relation(fields: [barrioId], references: [id])
+  barrioId           Int?
+  latitud            Decimal?           @db.Decimal(10, 7)  // para el mapa
+  longitud           Decimal?           @db.Decimal(10, 7)
+  mostrarDireccionExacta Boolean        @default(false)
+
+  // Agente responsable
+  agente             Usuario            @relation(fields: [agenteId], references: [id])
+  agenteId           String
+
+  // Relaciones
+  imagenes           ImagenPropiedad[]
+  amenities          AmenityPropiedad[]
+  consultas          Consulta[]
+  visitas            Visita[]
+
+  // SEO / Metadata
+  slug               String             @unique  // "casa-3-dorm-chacras-cuyo"
+  metaDescripcion    String?
+
+  // Auditoría
+  publicadaEn        DateTime?          // cuando se hace visible
+  creadaEn           DateTime           @default(now())
+  actualizadaEn      DateTime           @updatedAt
+
+  @@index([tipoOperacion, tipoPropiedad, estado])
+  @@index([barrioId])
+  @@index([precio])
+}
+
+// ─────────────────────────────────────────
+// IMÁGENES
+// ─────────────────────────────────────────
+
+model ImagenPropiedad {
+  id           Int       @id @default(autoincrement())
+  propiedad    Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
+  propiedadId  String
+  url          String    // URL Cloudinary
+  urlThumb     String    // thumbnail optimizado
+  altText      String?
+  orden        Int       @default(0)  // para ordenar la galería
+  esPrincipal  Boolean   @default(false)
+}
+
+// ─────────────────────────────────────────
+// AMENITIES (pileta, parrilla, gym, etc.)
+// ─────────────────────────────────────────
+
+model Amenity {
+  id          Int                @id @default(autoincrement())
+  nombre      String             @unique  // "Pileta", "Parrilla", "Gimnasio"
+  icono       String?            // nombre del icono (ej: lucide icon name)
+  propiedades AmenityPropiedad[]
+}
+
+model AmenityPropiedad {
+  propiedad   Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
+  propiedadId String
+  amenity     Amenity   @relation(fields: [amenityId], references: [id])
+  amenityId   Int
+
+  @@id([propiedadId, amenityId])
+}
+
+// ─────────────────────────────────────────
+// CONSULTAS de potenciales compradores
+// ─────────────────────────────────────────
+
+model Consulta {
+  id           String    @id @default(cuid())
+  propiedad    Propiedad @relation(fields: [propiedadId], references: [id])
+  propiedadId  String
+  agente       Usuario?  @relation(fields: [agenteId], references: [id])
+  agenteId     String?
+
+  nombreContacto  String
+  emailContacto   String
+  telefonoContacto String?
+  mensaje         String
+
+  leida        Boolean   @default(false)
+  respondida   Boolean   @default(false)
+
+  creadaEn     DateTime  @default(now())
+}
+
+// ─────────────────────────────────────────
+// VISITAS (métricas de tráfico por propiedad)
+// ─────────────────────────────────────────
+
+model Visita {
+  id          Int       @id @default(autoincrement())
+  propiedad   Propiedad @relation(fields: [propiedadId], references: [id], onDelete: Cascade)
+  propiedadId String
+  ip          String?
+  userAgent   String?
+  visitadaEn  DateTime  @default(now())
+
+  @@index([propiedadId, visitadaEn])
+}
