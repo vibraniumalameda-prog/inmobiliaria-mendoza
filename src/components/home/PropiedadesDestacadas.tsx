@@ -1,8 +1,14 @@
 import { prisma } from "@/lib/db";
 import TarjetaPropiedad from "@/components/propiedades/TarjetaPropiedad";
+import type { Propiedad, ImagenPropiedad, Barrio, Departamento } from "@prisma/client";
+
+type PropiedadConRelaciones = Propiedad & {
+  imagenes: ImagenPropiedad[];
+  barrio: (Barrio & { departamento: Departamento }) | null;
+};
 
 export default async function PropiedadesDestacadas() {
-  let propiedades: Awaited<ReturnType<typeof prisma.propiedad.findMany>> = [];
+  let propiedades: PropiedadConRelaciones[] = [];
 
   try {
     propiedades = await prisma.propiedad.findMany({
@@ -13,7 +19,7 @@ export default async function PropiedadesDestacadas() {
       },
       orderBy: { publicadaEn: "desc" },
       take: 6,
-    });
+    }) as PropiedadConRelaciones[];
   } catch {
     return null;
   }

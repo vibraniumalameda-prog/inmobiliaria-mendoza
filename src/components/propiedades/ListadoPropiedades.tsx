@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/db";
 import TarjetaPropiedad from "./TarjetaPropiedad";
-import type { TipoOperacion, TipoPropiedad } from "@prisma/client";
+import type { TipoOperacion, TipoPropiedad, Propiedad, ImagenPropiedad, Barrio, Departamento } from "@prisma/client";
+
+type PropiedadConRelaciones = Propiedad & {
+  imagenes: ImagenPropiedad[];
+  barrio: (Barrio & { departamento: Departamento }) | null;
+};
 
 const POR_PAGINA = 12;
 
@@ -36,11 +41,11 @@ export default async function ListadoPropiedades({ searchParams }: Props) {
     ...(searchParams.dormitorios && { dormitorios: { gte: Number(searchParams.dormitorios) } }),
   };
 
-  let propiedades: Awaited<ReturnType<typeof prisma.propiedad.findMany>> = [];
+  let propiedades: PropiedadConRelaciones[] = [];
   let total = 0;
 
   try {
-    [propiedades, total] = await Promise.all([
+    const resultado = await Promise.all([
       prisma.propiedad.findMany({
         where,
         include: {
@@ -53,6 +58,8 @@ export default async function ListadoPropiedades({ searchParams }: Props) {
       }),
       prisma.propiedad.count({ where }),
     ]);
+    propiedades = resultado[0] as PropiedadConRelaciones[];
+    total = resultado[1];
   } catch {
     return (
       <div className="text-center py-16 text-neutro-500">
