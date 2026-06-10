@@ -18,7 +18,7 @@ export default function AdminSidebar() {
   return (
     <aside className="w-56 bg-neutro-950 text-neutro-300 flex flex-col min-h-screen">
       <div className="p-5 border-b border-neutro-800">
-        <p className="font-bold text-white text-sm">Inmobiliaria Mendoza</p>
+        <p className="font-bold text-white text-sm">Mangione Propiedades</p>
         <p className="text-xs text-neutro-500 mt-0.5">Panel de gestión</p>
       </div>
 

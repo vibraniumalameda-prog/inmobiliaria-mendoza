@@ -33,7 +33,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-neutro-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
         <h1 className="text-2xl font-bold text-neutro-900 mb-1">Panel Admin</h1>
-        <p className="text-sm text-neutro-500 mb-6">Inmobiliaria Mendoza</p>
+        <p className="text-sm text-neutro-500 mb-6">Mangione Propiedades</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

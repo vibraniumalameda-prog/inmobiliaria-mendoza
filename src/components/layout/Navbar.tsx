@@ -11,7 +11,7 @@ export default function Navbar() {
     <header className="bg-white border-b border-neutro-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="font-bold text-xl text-marca-700">
-          Inmobiliaria Mendoza
+          Mangione Propiedades
         </Link>
 
         {/* Desktop nav */}

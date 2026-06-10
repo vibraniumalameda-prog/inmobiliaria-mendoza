@@ -8,12 +8,12 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-geist-sans" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Inmobiliaria Mendoza | Propiedades en Venta y Alquiler",
-    template: "%s | Inmobiliaria Mendoza",
+    default: "Mangione Propiedades | Propiedades en Venta y Alquiler en Mendoza",
+    template: "%s | Mangione Propiedades",
   },
   description:
-    "Encontrá tu propiedad ideal en Mendoza. Casas, departamentos y terrenos en venta y alquiler en Godoy Cruz, Luján de Cuyo, Guaymallén y toda la provincia.",
-  keywords: ["inmobiliaria mendoza", "propiedades mendoza", "casas en venta mendoza", "alquiler mendoza"],
+    "Encontrá tu propiedad ideal en Mendoza con Mangione Propiedades. Casas, departamentos y terrenos en venta y alquiler en Godoy Cruz, Luján de Cuyo, Guaymallén y toda la provincia.",
+  keywords: ["mangione propiedades", "inmobiliaria mendoza", "propiedades mendoza", "casas en venta mendoza", "alquiler mendoza"],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
